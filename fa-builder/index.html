@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <script src="built/src/main.js" type="module" defer></script>
+</head>
+
+<body>
+  <h1>fa-builder</h1>
+  <div id="app-container">
+    <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- A marker to be used as an arrowhead -->
+        <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="6" markerHeight="6"
+          orient="auto-start-reverse">
+          <path d="M 0 0 L 12 6 L 0 12 z" />
+        </marker>
+      </defs>
+      <g id="state-layer"></g>
+      <g id="edge-layer"></g>
+      <g id="top-layer"></g>
+    </svg>
+
+    <div id="add-state" class="statelike">Drag me!</div>
+
+    <div id="config-menu-container" class="none">
+      <form id="trans-config">
+        <h2>Transition configuration</h2>
+        <p>
+          <label for="trans-char">Transition character:</label>
+          <input id="trans-char">
+        </p>
+        <p>
+          <input type="checkbox" id="epsilon-trans">
+          <label for="epsilon-trans">Epsilon transition</label>
+        </p>
+        <fieldset>
+          <legend>Edge type</legend>
+          <input type="radio" id="line-choice" name="arrow-type" value="line">
+          <label for="line-choice">Line</label>
+          <input type="radio" id="bezier-choice" name="arrow-type" value="bezier">
+          <label for="bezier-choice">Bezier curve</label>
+          <p id="line-options">
+            <input type="checkbox" id="shortest-line">
+            <label for="shortest-line">Shortest line</label>
+          </p>
+        </fieldset>
+        <p>
+          <button id="reverse-edge">Reverse Text Side</button>
+        </p>
+      </form>
+
+      <form id="state-config">
+        <h2>State configuration</h2>
+        <p>
+          <label for="state-name">State name:</label>
+          <input id="state-name">
+        </p>
+        <p>
+          <input type="checkbox" id="starting">
+          <label for="starting">Starting state</label>
+        </p>
+        <p>
+          <input type="checkbox" id="accepting">
+          <label for="accepting">Accepting state</label>
+        </p>
+      </form>
+
+      <p id="mult-warning">
+        Multiple elements selected.
+      </p>
+
+      <p id="common-menu">
+        <button type="button" id="delete">Delete</button>
+      </p>
+
+      <p id="config-menu-hint">
+        Drag and select something on the canvas to view configuration options.
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

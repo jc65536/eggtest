@@ -1,0 +1,98 @@
+@import url("automaton.css");
+
+:root {
+    --fa-sel-stroke: #00ff00;
+    --sel-fill: #0000ff10;
+    --sel-stroke: #0000ff;
+    --handle-fill: #ff00ff;
+}
+
+/* App layout */
+
+#app-container {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr max(16rem, min(25%, 24rem));
+    grid-template-rows: max-content 1fr;
+    grid-template-areas:
+        "canvas   drag-items "
+        "canvas   config-menu"
+        "canvas   global-menu";
+    gap: 1rem 1rem;
+}
+
+#canvas {
+    border: 1px solid black;
+    grid-area: canvas;
+    height: 75vh;
+    width: 100%;
+}
+
+.state {
+    cursor: move;
+    pointer-events: visibleFill;
+}
+
+.selected {
+    stroke: var(--fa-sel-stroke);
+}
+
+.selection {
+    stroke-width: 1;
+    stroke: var(--sel-stroke);
+    fill: var(--sel-fill);
+}
+
+#add-state {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    cursor: move;
+    user-select: none;
+    grid-area: drag-items;
+}
+
+.statelike {
+    box-sizing: border-box;
+    /* Using px here to correspond to SVG units */
+    width: 74px;
+    height: 74px;
+    border: 2px solid var(--fa-stroke);
+    border-radius: 100%;
+}
+
+.draggable {
+    position: fixed;
+}
+
+#config-menu-container {
+    grid-area: config-menu;
+    width: 100%;
+}
+
+#line-choice:not(:checked)~#line-options {
+    display: none;
+}
+
+.control-handle {
+    stroke: none;
+    fill: var(--handle-fill);
+    cursor: crosshair;
+}
+
+#config-menu-container:not(.none) > #config-menu-hint,
+#config-menu-container.none > #common-menu,
+#config-menu-container:not(.trans) > #trans-config,
+#config-menu-container:not(.state) > #state-config,
+#config-menu-container:not(.mult) > #mult-warning {
+    display: none;
+}
+
+#global-menu-container {
+    grid-area: global-menu;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
