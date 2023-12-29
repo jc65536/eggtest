@@ -1,11 +1,14 @@
 import {
+    AccessType,
     getStartingState, setStartingState, State, toggleAccept
 } from "./main.js";
 
 export const form = document.querySelector<HTMLFormElement>("#state-config");
 
 export const inputs = {
-    stateName: form.querySelector<HTMLInputElement>("#state-name"),
+    read: form.querySelector<HTMLInputElement>("#read"),
+    write: form.querySelector<HTMLInputElement>("#write"),
+    addr: form.querySelector<HTMLInputElement>("#addr"),
     starting: form.querySelector<HTMLInputElement>("#starting"),
     accepting: form.querySelector<HTMLInputElement>("#accepting")
 }
@@ -15,9 +18,18 @@ let selectedState: State = null;
 export const initForm = (state: State) => {
     selectedState = state;
 
-    const { stateName, starting, accepting } = inputs;
+    const { read, write, addr, starting, accepting } = inputs;
 
-    stateName.value = state.name;
+    switch (state.access) {
+        case AccessType.Read:
+            read.checked = true;
+            break;
+        case AccessType.Write:
+            write.checked = true;
+            break;
+    }
+
+    addr.value = state.addr;
     starting.checked = state === getStartingState();
     accepting.checked = state.accepting;
 };
@@ -27,10 +39,14 @@ const checkNull = <T>(f: (_: T) => void) => (arg: T) => {
         f(arg);
 };
 
-export const inputStateName = checkNull((evt: Event) => {
-    selectedState.textElem.textContent
-        = selectedState.name
-        = inputs.stateName.value;
+const updateText = (state: State) => {
+    const { textElem, access, addr } = state;
+    textElem.textContent = `${access}[${addr}]`;
+};
+
+export const inputAddr = checkNull((evt: Event) => {
+    selectedState.addr = inputs.addr.value;
+    updateText(selectedState);
 });
 
 export const changeStarting = checkNull((evt: Event) =>
@@ -38,7 +54,19 @@ export const changeStarting = checkNull((evt: Event) =>
 
 const changeAccepting = checkNull((evt: Event) => toggleAccept(selectedState));
 
-inputs.stateName.addEventListener("input", inputStateName);
+const changeAccess = checkNull((evt: Event) => {
+    const { read, write } = inputs;
+
+    if (read.checked)
+        selectedState.access = AccessType.Read;
+    else if (write.checked)
+        selectedState.access = AccessType.Write;
+
+    updateText(selectedState);
+});
+
+inputs.addr.addEventListener("input", inputAddr);
 inputs.starting.addEventListener("change", changeStarting);
 inputs.accepting.addEventListener("change", changeAccepting);
-
+inputs.read.addEventListener("change", changeAccess);
+inputs.write.addEventListener("change", changeAccess);

@@ -50,8 +50,14 @@
       <form id="state-config">
         <h2>State configuration</h2>
         <p>
-          <label for="state-name">State name:</label>
-          <input id="state-name">
+          <input type="radio" name="access" id="read">
+          <label for="read">Read</label>
+          <input type="radio" name="access" id="write">
+          <label for="write">Write</label>
+        </p>
+        <p>
+          <label for="addr">Addr:</label>
+          <input id="addr">
         </p>
         <p>
           <input type="checkbox" id="starting">

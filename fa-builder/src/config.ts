@@ -5,8 +5,6 @@ export const stateConfig = {
 
 export const epsilon = 1e-9;
 
-export const exportName = "automaton.svg";
-
 export const ctrlHandleConfig = {
     radius: 5
 };

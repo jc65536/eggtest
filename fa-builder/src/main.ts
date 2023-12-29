@@ -1,7 +1,7 @@
 import * as vec from "./vector.js";
 import * as dragMan from "./drag-manager.js";
 import { Vec } from "./vector.js";
-import { edgeConfig, exportName, stateConfig } from "./config.js";
+import { edgeConfig, stateConfig } from "./config.js";
 import {
     createSvgElement, screenToSvgCoords, setAttributes, uniqueStr
 } from "./util.js";
@@ -28,9 +28,12 @@ export const configMenuContainer =
 
 // State machine data types and global structures for storing the state machine
 
+export enum AccessType { Read = "R", Write = "W" }
+
 export type State = {
-    name: string,
+    addr: string,
     accepting: boolean,
+    access: AccessType,
     groupElem: SVGGElement,
     textElem: SVGTextElement,
     pos: Vec,
@@ -119,16 +122,15 @@ export const addState = (pos: Vec) => {
     trans.setTranslate(pos[0], pos[1]);
     group.transform.baseVal.appendItem(trans);
 
-    const name = `q${uniqueStr("state")}`;
-
     const text = createSvgElement("text");
-    text.textContent = name;
+    text.textContent = "R[x]";
     text.classList.add("state-name");
     group.appendChild(text);
 
     const state: State = {
-        name: name,
+        addr: "x",
         accepting: false,
+        access: AccessType.Read,
         groupElem: group,
         textElem: text,
         pos: pos,
