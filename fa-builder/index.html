@@ -26,10 +26,21 @@
 
     <div id="config-menu-container" class="none">
       <form id="trans-config">
-        <h2>Transition configuration</h2>
+        <h2>Edge configuration</h2>
         <p>
-          <label for="trans-char">Transition character:</label>
-          <input id="trans-char">
+          <label for="edge-type">Edge type:</label>
+          <select id="edge-type">
+            <option value="po">po - program order</option>
+            <option value="rf">rf - read from</option>
+            <option value="dmb">dmb/sync - strong barrier</option>
+            <option value="lwsync">lwsync - lightweight sync</option>
+            <option value="addr">addr - address dependency</option>
+            <option value="ctrl">ctrl - control dependency</option>
+            <option value="ctrlisb">ctrlisb/isync - control-isb/isync dependency</option>
+            <option value="co">co - coherence condition</option>
+            <option value="data">data - data dependency</option>
+            <option value="fr">fr - from reads</option>
+          </select>
         </p>
         <fieldset>
           <legend>Edge type</legend>
@@ -58,6 +69,10 @@
         <p>
           <label for="addr">Addr:</label>
           <input id="addr">
+        </p>
+        <p>
+          <label for="value">Value:</label>
+          <input id="value">
         </p>
         <p>
           <input type="checkbox" id="starting">

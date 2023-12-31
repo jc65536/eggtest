@@ -1,4 +1,4 @@
-import { Edge } from "./main.js";
+import { Edge, EdgeType } from "./main.js";
 import {
     BezierControls, LineControls, ShortestLineControls
 } from "./path-controls.js";
@@ -6,7 +6,7 @@ import {
 export const form = document.querySelector<HTMLFormElement>("#trans-config");
 
 export const inputs = {
-    transChar: form.querySelector<HTMLInputElement>("#trans-char"),
+    edgeType: form.querySelector<HTMLInputElement>("#edge-type"),
     lineChoice: form.querySelector<HTMLInputElement>("#line-choice"),
     bezierChoice: form.querySelector<HTMLInputElement>("#bezier-choice"),
     shortestLine: form.querySelector<HTMLInputElement>("#shortest-line"),
@@ -18,9 +18,9 @@ let selectedEdge: Edge = null;
 export const initForm = (edge: Edge) => {
     selectedEdge = edge;
 
-    const { transChar, shortestLine, lineChoice, bezierChoice } = inputs;
+    const { edgeType, shortestLine, lineChoice, bezierChoice } = inputs;
 
-    transChar.value = edge.transChar;
+    edgeType.value = edge.type;
 
     const controls = edge.controls;
 
@@ -44,10 +44,9 @@ const checkNull = <T>(f: (_: T) => void) => (arg: T) => {
         f(arg);
 };
 
-export const inputTransChar = checkNull((evt: Event) => {
-    const { transChar } = inputs;
-    selectedEdge.transChar = transChar.value;
-    selectedEdge.textPathElem.textContent = transChar.value;
+export const changeEdgeType = checkNull((evt: Event) => {
+    const { edgeType: { value } } = inputs;
+    selectedEdge.textPathElem.textContent = selectedEdge.type = EdgeType[value];
 });
 
 const changeShortestLine = checkNull((evt: Event) => {
@@ -76,7 +75,7 @@ const clickReverseEdge = checkNull((evt: Event) => {
     selectedEdge.controls.updatePath();
 });
 
-inputs.transChar.addEventListener("input", inputTransChar);
+inputs.edgeType.addEventListener("change", changeEdgeType);
 inputs.shortestLine.addEventListener("change", changeShortestLine);
 inputs.bezierChoice.addEventListener("change", selectBezierChoice);
 inputs.lineChoice.addEventListener("change", selectLineChoice);

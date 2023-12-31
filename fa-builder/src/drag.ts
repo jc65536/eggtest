@@ -1,7 +1,7 @@
 import { stateConfig } from "./config.js";
 import {
     addState, Edge, State, states, edges, addEdge, canvas, stateLayer,
-    edgeLayer, topLayer
+    edgeLayer, topLayer, EdgeType
 } from "./main.js";
 import { BezierControls } from "./path-controls.js";
 import {
@@ -107,7 +107,7 @@ export class DragEdgeCtx extends DragCtx {
 
         this.edge = {
             startState: state,
-            transChar: "",
+            type: EdgeType.po,
             endState: state,
             pathElem: path,
             textElem: null,

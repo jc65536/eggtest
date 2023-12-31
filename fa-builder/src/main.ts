@@ -34,6 +34,7 @@ export type State = {
     addr: string,
     accepting: boolean,
     access: AccessType,
+    value: string,
     groupElem: SVGGElement,
     textElem: SVGTextElement,
     pos: Vec,
@@ -42,9 +43,16 @@ export type State = {
     handles: Set<ControlHandle>
 };
 
+export enum EdgeType {
+    po = "po", rf = "rf", dmb = "dmb",
+    lwsync = "lwsync", addr = "addr", ctrl = "ctrl",
+    ctrlisb = "ctrlisb", co = "co", data = "data",
+    fr = "fr"
+}
+
 export type Edge = {
     startState: State,
-    transChar: string,
+    type: EdgeType,
     endState: State,
     pathElem: SVGPathElement,
     textElem: SVGTextElement,
@@ -65,7 +73,7 @@ export const [setStartingState, getStartingState, getStartingEdge] = (() => {
 
     const startingEdge: Edge = {
         startState: null,
-        transChar: null,
+        type: null,
         endState: null,
         pathElem: path,
         textElem: null,
@@ -123,7 +131,7 @@ export const addState = (pos: Vec) => {
     group.transform.baseVal.appendItem(trans);
 
     const text = createSvgElement("text");
-    text.textContent = "R[x]";
+    text.textContent = "R[x]=0";
     text.classList.add("state-name");
     group.appendChild(text);
 
@@ -131,6 +139,7 @@ export const addState = (pos: Vec) => {
         addr: "x",
         accepting: false,
         access: AccessType.Read,
+        value: "0",
         groupElem: group,
         textElem: text,
         pos: pos,
@@ -195,6 +204,7 @@ export const addEdge = (edge: Edge) => {
     const textPath = createSvgElement("textPath");
     textPath.setAttribute("startOffset", "50%");
     textPath.setAttribute("href", `#${id}`);
+    textPath.textContent = edge.type;
     edge.textPathElem = textPath;
     transCharContainer.appendChild(textPath);
 

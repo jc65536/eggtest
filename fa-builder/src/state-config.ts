@@ -9,6 +9,7 @@ export const inputs = {
     read: form.querySelector<HTMLInputElement>("#read"),
     write: form.querySelector<HTMLInputElement>("#write"),
     addr: form.querySelector<HTMLInputElement>("#addr"),
+    value: form.querySelector<HTMLInputElement>("#value"),
     starting: form.querySelector<HTMLInputElement>("#starting"),
     accepting: form.querySelector<HTMLInputElement>("#accepting")
 }
@@ -18,7 +19,7 @@ let selectedState: State = null;
 export const initForm = (state: State) => {
     selectedState = state;
 
-    const { read, write, addr, starting, accepting } = inputs;
+    const { read, write, addr, value, starting, accepting } = inputs;
 
     switch (state.access) {
         case AccessType.Read:
@@ -30,6 +31,7 @@ export const initForm = (state: State) => {
     }
 
     addr.value = state.addr;
+    value.value = state.value;
     starting.checked = state === getStartingState();
     accepting.checked = state.accepting;
 };
@@ -40,14 +42,16 @@ const checkNull = <T>(f: (_: T) => void) => (arg: T) => {
 };
 
 const updateText = (state: State) => {
-    const { textElem, access, addr } = state;
-    textElem.textContent = `${access}[${addr}]`;
+    const { textElem, access, addr, value } = state;
+    textElem.textContent = `${access}[${addr}]=${value}`;
 };
 
-export const inputAddr = checkNull((evt: Event) => {
+const inputAddr = checkNull((evt: Event) => {
     selectedState.addr = inputs.addr.value;
     updateText(selectedState);
 });
+
+const inputValue = checkNull((evt: Event) => selectedState.value = inputs.value.value);
 
 export const changeStarting = checkNull((evt: Event) =>
     setStartingState(inputs.starting.checked ? selectedState : null));
@@ -65,8 +69,9 @@ const changeAccess = checkNull((evt: Event) => {
     updateText(selectedState);
 });
 
-inputs.addr.addEventListener("input", inputAddr);
-inputs.starting.addEventListener("change", changeStarting);
-inputs.accepting.addEventListener("change", changeAccepting);
 inputs.read.addEventListener("change", changeAccess);
 inputs.write.addEventListener("change", changeAccess);
+inputs.addr.addEventListener("input", inputAddr);
+inputs.value.addEventListener("input", inputValue);
+inputs.starting.addEventListener("change", changeStarting);
+inputs.accepting.addEventListener("change", changeAccepting);
