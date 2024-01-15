@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::stdin};
+use std::{collections::HashMap, io::stdin, hash::Hash};
 
 use nom::{
     branch::alt,
@@ -19,7 +19,7 @@ enum AccessType {
     Write,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 enum EdgeType {
     Po,
     Rf,
@@ -41,34 +41,34 @@ struct MemAccess {
 }
 
 #[derive(Debug)]
-struct State {
+struct Node {
     id: u32,
     access: Option<MemAccess>,
     ending: bool,
-    out_edges: Vec<(Option<EdgeType>, u32)>,
+    in_edges: HashMap<EdgeType, u32>,
+    out_edges: HashMap<EdgeType, u32>,
 }
 
-fn parse_edge(input: &str) -> IResult<&str, (Option<EdgeType>, u32)> {
+fn parse_edge(input: &str) -> IResult<&str, (EdgeType, u32)> {
     let (input, (_, edge_type_str, _, id_str)) =
         tuple((tag(" | "), alt((alpha1, tag("~"))), tag(" -> "), digit1))(input)?;
     let edge_type = match edge_type_str {
-        "po" => Some(EdgeType::Po),
-        "rf" => Some(EdgeType::Rf),
-        "dmb" => Some(EdgeType::Dmb),
-        "lwsync" => Some(EdgeType::Lwsync),
-        "addr" => Some(EdgeType::Addr),
-        "ctrl" => Some(EdgeType::Ctrl),
-        "ctrlisb" => Some(EdgeType::Ctrlisb),
-        "co" => Some(EdgeType::Co),
-        "data" => Some(EdgeType::Data),
-        "fr" => Some(EdgeType::Fr),
-        "~" => None,
+        "po" => EdgeType::Po,
+        "rf" => EdgeType::Rf,
+        "dmb" => EdgeType::Dmb,
+        "lwsync" => EdgeType::Lwsync,
+        "addr" => EdgeType::Addr,
+        "ctrl" => EdgeType::Ctrl,
+        "ctrlisb" => EdgeType::Ctrlisb,
+        "co" => EdgeType::Co,
+        "data" => EdgeType::Data,
+        "fr" => EdgeType::Fr,
         _ => panic!("Invalid edge type"),
     };
     Ok((input, (edge_type, id_str.parse().unwrap())))
 }
 
-fn parse_state(input: &str) -> IResult<&str, State> {
+fn parse_node(input: &str) -> IResult<&str, Node> {
     let (input, (ending, id_str, _, access_ch, addr, _, value_str)) = tuple((
         opt(tag("$")),
         digit1,
@@ -81,7 +81,7 @@ fn parse_state(input: &str) -> IResult<&str, State> {
 
     let (input, out_edges) = many0(parse_edge)(input)?;
 
-    let state = State {
+    let node = Node {
         id: id_str.parse().unwrap(),
         access: Some(MemAccess {
             t: match access_ch {
@@ -93,37 +93,46 @@ fn parse_state(input: &str) -> IResult<&str, State> {
             value: value_str.parse().unwrap(),
         }),
         ending: ending.is_some(),
-        out_edges,
+        in_edges: HashMap::new(),
+        out_edges: HashMap::from_iter(out_edges.into_iter()),
     };
 
-    Ok((input, state))
+    Ok((input, node))
 }
 
-fn parse_init_state(input: &str) -> IResult<&str, State> {
+fn parse_init_node(input: &str) -> IResult<&str, Node> {
     let (input, _) = tuple((take_until("init"), tag("init")))(input)?;
     let (input, out_edges) = many0(parse_edge)(input)?;
 
-    let state = State {
+    let node = Node {
         id: 0,
         access: None,
         ending: false,
-        out_edges,
+        in_edges: HashMap::new(),
+        out_edges: HashMap::from_iter(out_edges.into_iter()),
     };
 
-    Ok((input, state))
+    Ok((input, node))
 }
 
-fn parse_graph() -> HashMap<u32, State> {
+fn parse_graph() -> HashMap<u32, Node> {
     let mut lines = stdin().lines();
     let first_line = lines.next().unwrap().unwrap();
-    let (_, init_state) = parse_init_state(&first_line).unwrap();
-    let mut graph: HashMap<u32, State> = HashMap::new();
-    graph.insert(0, init_state);
+    let (_, init_node) = parse_init_node(&first_line).unwrap();
+    let mut graph: HashMap<u32, Node> = HashMap::new();
+    graph.insert(0, init_node);
     lines
-        .map(|line| parse_state(&line.unwrap()).unwrap().1)
-        .for_each(|state| {
-            graph.insert(state.id, state);
+        .map(|line| parse_node(&line.unwrap()).unwrap().1)
+        .for_each(|node| {
+            graph.insert(node.id, node);
         });
+
+    graph.iter_mut().for_each(|(_, node)| {
+        node.out_edges.iter_mut().for_each(|(edge, n)| {
+            graph.get_mut(n).unwrap().in_edges.insert(*edge, node.id);
+        })
+    });
+
     graph
 }
 
