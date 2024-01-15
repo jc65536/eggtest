@@ -8,6 +8,14 @@
     fill: none;
 }
 
+.state.starting {
+    fill: rgb(0 255 0 / 25%);
+}
+
+.state.ending {
+    fill: rgb(255 0 0 / 25%);
+}
+
 .edge {
     stroke-width: 2;
     stroke: var(--fa-stroke);

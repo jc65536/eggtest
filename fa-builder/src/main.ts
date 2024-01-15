@@ -30,10 +30,13 @@ export const configMenuContainer =
 
 export enum AccessType { Read = "R", Write = "W" }
 
+export enum StateType { Starting, Ending, Neither }
+
 export type State = {
     addr: string,
     access: AccessType,
     value: string,
+    type: StateType,
     groupElem: SVGGElement,
     textElem: SVGTextElement,
     pos: Vec,
@@ -64,6 +67,8 @@ export const edges = new Set<Edge>();
 
 // Basic interactions with states/edges
 
+export const formatState = (state: State) => `${state.access}${state.addr}=${state.value}`;
+
 export const addState = (pos: Vec) => {
     const rad = stateConfig.radius.toString();
     const circle = createSvgElement("circle");
@@ -86,6 +91,7 @@ export const addState = (pos: Vec) => {
         addr: "x",
         access: AccessType.Read,
         value: "0",
+        type: StateType.Neither,
         groupElem: group,
         textElem: text,
         pos: pos,
@@ -226,23 +232,30 @@ document.addEventListener("mouseup", dragMan.handleDrop);
 
 const output = document.querySelector<HTMLPreElement>("#output");
 
-const uniqueName = (() => {
-    let i = 0;
-    return () => i++;
-})();
-
 export const dumpGraph = () => {
+    const uniqueName = (() => {
+        let i = 1;
+        return () => i++;
+    })();
+
     const stateNames = new Map<State, number>();
 
     states.forEach(state => stateNames.set(state, uniqueName()));
 
+    const initial: string[] = ["0: ~"];
+
     const lines: string[] = [];
 
     stateNames.forEach((name, state) => {
-        const line = [`${name}: ${state.access}[${state.addr}]=${state.value}`];
+        const ending = state.type === StateType.Ending ? "$" : "";
+        const line = [`${ending}${name}: ${formatState(state)}`];
         state.outEdges.forEach(edge => line.push(`${edge.type} -> ${stateNames.get(edge.endState)}`));
         lines.push(line.join(" | ") + "\n");
+        if (state.type === StateType.Starting)
+            initial.push(`~ -> ${stateNames.get(state)}`);
     });
 
-    output.textContent = lines.join("");
+    const allLines = [initial.join(" | ") + "\n", ...lines];
+
+    output.textContent = allLines.join("");
 };
