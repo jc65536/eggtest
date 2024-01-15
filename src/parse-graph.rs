@@ -69,9 +69,9 @@ fn parse_edge(input: &str) -> IResult<&str, (Option<EdgeType>, u32)> {
 }
 
 fn parse_state(input: &str) -> IResult<&str, State> {
-    let (input, (id_str, ending, _, access_ch, addr, _, value_str)) = tuple((
-        digit1,
+    let (input, (ending, id_str, _, access_ch, addr, _, value_str)) = tuple((
         opt(tag("$")),
+        digit1,
         tag(": "),
         one_of("RW"),
         alpha1,
@@ -100,7 +100,7 @@ fn parse_state(input: &str) -> IResult<&str, State> {
 }
 
 fn parse_init_state(input: &str) -> IResult<&str, State> {
-    let (input, _) = tuple((take_until("~"), tag("~")))(input)?;
+    let (input, _) = tuple((take_until("init"), tag("init")))(input)?;
     let (input, out_edges) = many0(parse_edge)(input)?;
 
     let state = State {
