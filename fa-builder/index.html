@@ -26,7 +26,7 @@
 
     <div id="config-menu-container" class="none">
       <form id="trans-config">
-        <h2>Edge configuration</h2>
+        <h2>Edge config</h2>
         <p>
           <label for="edge-type">Edge type:</label>
           <select id="edge-type">
@@ -43,7 +43,7 @@
           </select>
         </p>
         <fieldset>
-          <legend>Edge type</legend>
+          <legend>Line style</legend>
           <input type="radio" id="line-choice" name="arrow-type" value="line">
           <label for="line-choice">Line</label>
           <input type="radio" id="bezier-choice" name="arrow-type" value="bezier">
@@ -59,7 +59,7 @@
       </form>
 
       <form id="state-config">
-        <h2>State configuration</h2>
+        <h2>State config</h2>
         <p>
           <input type="radio" name="access" id="read">
           <label for="read">Read</label>
@@ -74,14 +74,6 @@
           <label for="value">Value:</label>
           <input id="value">
         </p>
-        <p>
-          <input type="checkbox" id="starting">
-          <label for="starting">Starting state</label>
-        </p>
-        <p>
-          <input type="checkbox" id="accepting">
-          <label for="accepting">Accepting state</label>
-        </p>
       </form>
 
       <p id="mult-warning">
@@ -95,6 +87,10 @@
       <p id="config-menu-hint">
         Drag and select something on the canvas to view configuration options.
       </p>
+    </div>
+    <div id="output-container">
+      Output goes here:
+      <pre id="output"></pre>
     </div>
   </div>
 </body>

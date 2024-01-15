@@ -32,7 +32,6 @@ export enum AccessType { Read = "R", Write = "W" }
 
 export type State = {
     addr: string,
-    accepting: boolean,
     access: AccessType,
     value: string,
     groupElem: SVGGElement,
@@ -61,61 +60,9 @@ export type Edge = {
 };
 
 export const states = new Set<State>();
-export const acceptingStates = new Set<State>();
 export const edges = new Set<Edge>();
 
-export const [setStartingState, getStartingState, getStartingEdge] = (() => {
-    let startingState: State = null;
-
-    const path = createSvgElement("path");
-    path.classList.add("edge");
-    path.id = "starting-edge";
-
-    const startingEdge: Edge = {
-        startState: null,
-        type: null,
-        endState: null,
-        pathElem: path,
-        textElem: null,
-        textPathElem: null,
-        controls: null
-    };
-
-    const setStartingState = (state: State) => {
-        startingState?.inEdges.delete(startingEdge);
-
-        if (state === null) {
-            edges.delete(startingEdge);
-            startingEdge.pathElem.remove();
-        } else {
-            state.inEdges.add(startingEdge);
-            startingEdge.endState = state;
-            startingEdge.controls = new StartingEdgeControls(startingEdge);
-            edges.add(startingEdge);
-            edgeLayer.appendChild(path);
-        }
-
-        startingState = state;
-    };
-
-    return [setStartingState, () => startingState, () => startingEdge];
-})();
-
 // Basic interactions with states/edges
-
-export const toggleAccept = (state: State) => {
-    state.accepting = !state.accepting;
-    if (state.accepting) {
-        const innerCircle = createSvgElement("circle");
-        innerCircle.setAttribute("r", stateConfig.innerRadius.toString());
-        innerCircle.classList.add("inner-circle");
-        state.groupElem.appendChild(innerCircle);
-        acceptingStates.add(state);
-    } else {
-        state.groupElem.querySelector(".inner-circle").remove();
-        acceptingStates.delete(state);
-    }
-};
 
 export const addState = (pos: Vec) => {
     const rad = stateConfig.radius.toString();
@@ -137,7 +84,6 @@ export const addState = (pos: Vec) => {
 
     const state: State = {
         addr: "x",
-        accepting: false,
         access: AccessType.Read,
         value: "0",
         groupElem: group,
@@ -149,23 +95,18 @@ export const addState = (pos: Vec) => {
     };
 
     group.addEventListener("mousedown", startDragOnState(state));
-    group.addEventListener("dblclick", () => toggleAccept(state));
     states.add(state);
     stateLayer.appendChild(group);
+    dumpGraph();
 };
 
 export const deleteState = (state: State) => {
     state.outEdges.forEach(deleteEdge);
     state.inEdges.forEach(deleteEdge);
 
-    if (state.accepting)
-        acceptingStates.delete(state);
-
-    if (state === getStartingState())
-        setStartingState(null);
-
     state.groupElem.remove();
     states.delete(state);
+    dumpGraph();
 };
 
 export const addEdge = (edge: Edge) => {
@@ -209,18 +150,16 @@ export const addEdge = (edge: Edge) => {
     transCharContainer.appendChild(textPath);
 
     edgeLayer.appendChild(transCharContainer);
+    dumpGraph();
 }
 
 export const deleteEdge = (edge: Edge) => {
-    if (edge === getStartingEdge()) {
-        setStartingState(null);
-    } else {
-        edge.startState.outEdges.delete(edge);
-        edge.endState.inEdges.delete(edge);
-        edge.pathElem.remove();
-        edge.textElem.remove();
-        edges.delete(edge);
-    }
+    edge.startState.outEdges.delete(edge);
+    edge.endState.inEdges.delete(edge);
+    edge.pathElem.remove();
+    edge.textElem.remove();
+    edges.delete(edge);
+    dumpGraph();
 };
 
 // Drag initialization functions
@@ -285,10 +224,25 @@ canvas.addEventListener("mousedown", startDragSelection);
 document.addEventListener("mousemove", dragMan.handleDrag);
 document.addEventListener("mouseup", dragMan.handleDrop);
 
-const dispatchShortcut = (evt: KeyboardEvent) => {
-    if (evt.ctrlKey && evt.key === "z") {
-        console.log("undo");
-    }
-};
+const output = document.querySelector<HTMLPreElement>("#output");
 
-document.addEventListener("keydown", dispatchShortcut);
+const uniqueName = (() => {
+    let i = 0;
+    return () => i++;
+})();
+
+export const dumpGraph = () => {
+    const stateNames = new Map<State, number>();
+
+    states.forEach(state => stateNames.set(state, uniqueName()));
+
+    const lines: string[] = [];
+
+    stateNames.forEach((name, state) => {
+        const line = [`${name}: ${state.access}[${state.addr}]=${state.value}`];
+        state.outEdges.forEach(edge => line.push(`${edge.type} -> ${stateNames.get(edge.endState)}`));
+        lines.push(line.join(" | ") + "\n");
+    });
+
+    output.textContent = lines.join("");
+};

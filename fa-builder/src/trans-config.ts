@@ -1,4 +1,4 @@
-import { Edge, EdgeType } from "./main.js";
+import { Edge, EdgeType, dumpGraph } from "./main.js";
 import {
     BezierControls, LineControls, ShortestLineControls
 } from "./path-controls.js";
@@ -47,6 +47,7 @@ const checkNull = <T>(f: (_: T) => void) => (arg: T) => {
 export const changeEdgeType = checkNull((evt: Event) => {
     const { edgeType: { value } } = inputs;
     selectedEdge.textPathElem.textContent = selectedEdge.type = EdgeType[value];
+    dumpGraph();
 });
 
 const changeShortestLine = checkNull((evt: Event) => {

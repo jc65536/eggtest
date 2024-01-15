@@ -15,9 +15,9 @@
     grid-template-columns: 1fr max(16rem, min(25%, 24rem));
     grid-template-rows: max-content 1fr;
     grid-template-areas:
-        "canvas   drag-items "
-        "canvas   config-menu"
-        "canvas   global-menu";
+        "canvas drag-items "
+        "canvas config-menu"
+        "output output     ";
     gap: 1rem 1rem;
 }
 
@@ -56,8 +56,8 @@
 .statelike {
     box-sizing: border-box;
     /* Using px here to correspond to SVG units */
-    width: 74px;
-    height: 74px;
+    width: 62px;
+    height: 62px;
     border: 2px solid var(--fa-stroke);
     border-radius: 100%;
 }
@@ -89,10 +89,6 @@
     display: none;
 }
 
-#global-menu-container {
-    grid-area: global-menu;
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    flex-wrap: wrap;
+#output-container {
+    grid-area: output;
 }

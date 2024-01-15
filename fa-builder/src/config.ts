@@ -1,6 +1,5 @@
 export const stateConfig = {
-    radius: 36,
-    innerRadius: 24
+    radius: 30
 };
 
 export const epsilon = 1e-9;

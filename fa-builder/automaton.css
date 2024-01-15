@@ -26,7 +26,7 @@
 
 .trans-char-container, .state-name {
     text-anchor: middle;
-    font: 1.25rem sans-serif;
+    font: 1rem sans-serif;
     fill: var(--fa-stroke);
     user-select: none;
 }
