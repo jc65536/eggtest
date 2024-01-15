@@ -10,7 +10,7 @@ import {
 } from "./drag.js";
 import {
     BezierControls, ControlHandle, PathControls,
-    ShortestLineControls, StartingEdgeControls
+    ShortestLineControls
 } from "./path-controls.js";
 import { cancelSelection, selectedStates } from "./selection.js";
 
@@ -30,13 +30,11 @@ export const configMenuContainer =
 
 export enum AccessType { Read = "R", Write = "W" }
 
-export enum StateType { Starting, Ending, Neither }
-
 export type State = {
     addr: string,
     access: AccessType,
     value: string,
-    type: StateType,
+    ending: boolean,
     groupElem: SVGGElement,
     textElem: SVGTextElement,
     pos: Vec,
@@ -67,9 +65,14 @@ export const edges = new Set<Edge>();
 
 // Basic interactions with states/edges
 
-export const formatState = (state: State) => `${state.access}${state.addr}=${state.value}`;
+export const formatState = (state: State) => {
+    if (state === startingState)
+        return "init";
+    else
+        return `${state.access}${state.addr}=${state.value}`
+};
 
-export const addState = (pos: Vec) => {
+const addState_ = (pos: Vec) => {
     const rad = stateConfig.radius.toString();
     const circle = createSvgElement("circle");
     circle.setAttribute("r", rad);
@@ -79,11 +82,10 @@ export const addState = (pos: Vec) => {
     group.appendChild(circle);
 
     const trans = canvas.createSVGTransform();
-    trans.setTranslate(pos[0], pos[1]);
+    trans.setTranslate(...pos);
     group.transform.baseVal.appendItem(trans);
 
     const text = createSvgElement("text");
-    text.textContent = "R[x]=0";
     text.classList.add("state-name");
     group.appendChild(text);
 
@@ -91,10 +93,10 @@ export const addState = (pos: Vec) => {
         addr: "x",
         access: AccessType.Read,
         value: "0",
-        type: StateType.Neither,
+        ending: false,
         groupElem: group,
         textElem: text,
-        pos: pos,
+        pos,
         inEdges: new Set(),
         outEdges: new Set(),
         handles: new Set()
@@ -103,10 +105,20 @@ export const addState = (pos: Vec) => {
     group.addEventListener("mousedown", startDragOnState(state));
     states.add(state);
     stateLayer.appendChild(group);
+
+    return state;
+};
+
+export const addState = (pos: Vec) => {
+    const state = addState_(pos);
+    state.textElem.textContent = formatState(state);
     dumpGraph();
 };
 
 export const deleteState = (state: State) => {
+    if (state === startingState)
+        return;
+
     state.outEdges.forEach(deleteEdge);
     state.inEdges.forEach(deleteEdge);
 
@@ -232,9 +244,15 @@ document.addEventListener("mouseup", dragMan.handleDrop);
 
 const output = document.querySelector<HTMLPreElement>("#output");
 
+export const startingState = (() => {
+    const state = addState_([200, 200]);
+    state.textElem.textContent = "init";
+    return state;
+})();
+
 export const dumpGraph = () => {
     const uniqueName = (() => {
-        let i = 1;
+        let i = 0;
         return () => i++;
     })();
 
@@ -242,20 +260,14 @@ export const dumpGraph = () => {
 
     states.forEach(state => stateNames.set(state, uniqueName()));
 
-    const initial: string[] = ["0: ~"];
-
     const lines: string[] = [];
 
     stateNames.forEach((name, state) => {
-        const ending = state.type === StateType.Ending ? "$" : "";
+        const ending = state.ending ? "$" : "";
         const line = [`${ending}${name}: ${formatState(state)}`];
         state.outEdges.forEach(edge => line.push(`${edge.type} -> ${stateNames.get(edge.endState)}`));
         lines.push(line.join(" | ") + "\n");
-        if (state.type === StateType.Starting)
-            initial.push(`~ -> ${stateNames.get(state)}`);
     });
 
-    const allLines = [initial.join(" | ") + "\n", ...lines];
-
-    output.textContent = allLines.join("");
+    output.textContent = lines.join("");
 };
